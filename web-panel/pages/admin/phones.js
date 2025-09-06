@@ -19,14 +19,16 @@ export default function PhonesAdmin(){
   const [q, setQ] = useState('');
   const [form, setForm] = useState({ commercial_name:'', model:'', works:true, bands:'', provinces:'', observations:'' });
   const [editing, setEditing] = useState(null);
-  const load = () => fetch(`/api/admin/phones?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>{
-    // Convertir arrays a texto para los inputs
-    setRows((d.data||[]).map(row => ({
-      ...row,
-      bands: Array.isArray(row.bands) ? arrayToText(row.bands) : (row.bands || ''),
-      provinces: Array.isArray(row.provinces) ? arrayToText(row.provinces) : (row.provinces || '')
-    }));
-  });
+  const load = () => fetch(`/api/admin/phones?q=${encodeURIComponent(q)}`)
+    .then(r=>r.json())
+    .then(d => {
+      // Convertir arrays a texto para los inputs
+      setRows((d.data||[]).map(row => ({
+        ...row,
+        bands: Array.isArray(row.bands) ? arrayToText(row.bands) : (row.bands || ''),
+        provinces: Array.isArray(row.provinces) ? arrayToText(row.provinces) : (row.provinces || '')
+      })));
+    });
   useEffect(()=>{ load(); }, [q]);
   const save = async () => {
     const method = editing ? 'PUT':'POST';
