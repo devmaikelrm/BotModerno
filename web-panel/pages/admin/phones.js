@@ -1,19 +1,53 @@
 
 import { useEffect, useState } from 'react';
+
+// Helpers para parsear arrays
+function parseTextToArray(text) {
+  if (!text) return [];
+  return text
+    .replace(/[\r\n]/g, ' ')
+    .replace(/[|;]/g, ',')
+    .split(/\s*,\s*|\s{2,}/)
+    .map(x => x.trim())
+    .filter(Boolean);
+}
+function arrayToText(arr) {
+  return (arr || []).join(', ');
+}
 export default function PhonesAdmin(){
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
-  const [form, setForm] = useState({ commercial_name:'', model:'', works:true, bands:'', observations:'' });
+  const [form, setForm] = useState({ commercial_name:'', model:'', works:true, bands:'', provinces:'', observations:'' });
   const [editing, setEditing] = useState(null);
-  const load = () => fetch(`/api/admin/phones?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>setRows(d.data||[]));
+  const load = () => fetch(`/api/admin/phones?q=${encodeURIComponent(q)}`).then(r=>r.json()).then(d=>{
+    // Convertir arrays a texto para los inputs
+    setRows((d.data||[]).map(row => ({
+      ...row,
+      bands: Array.isArray(row.bands) ? arrayToText(row.bands) : (row.bands || ''),
+      provinces: Array.isArray(row.provinces) ? arrayToText(row.provinces) : (row.provinces || '')
+    }));
+  });
   useEffect(()=>{ load(); }, [q]);
   const save = async () => {
     const method = editing ? 'PUT':'POST';
+    // Convertir texto a array antes de enviar
     const body = editing ? { id: editing.id, ...form } : form;
+    body.bands = parseTextToArray(form.bands);
+    body.provinces = parseTextToArray(form.provinces);
     const r = await fetch('/api/admin/phones', { method, headers:{'Content-Type':'application/json'}, body: JSON.stringify(body) });
-    if (r.ok){ setForm({ commercial_name:'', model:'', works:true, bands:'', observations:'' }); setEditing(null); load(); } else { alert('Error'); }
+    if (r.ok){ setForm({ commercial_name:'', model:'', works:true, bands:'', provinces:'', observations:'' }); setEditing(null); load(); } else { alert('Error'); }
   };
-  const edit = (row) => { setEditing(row); setForm({ commercial_name:row.commercial_name||'', model:row.model||'', works:!!row.works, bands:row.bands||'', observations:row.observations||'' }); };
+  const edit = (row) => {
+    setEditing(row);
+    setForm({
+      commercial_name: row.commercial_name || '',
+      model: row.model || '',
+      works: !!row.works,
+      bands: row.bands || '',
+      provinces: row.provinces || '',
+      observations: row.observations || ''
+    });
+  };
   const del = async (id) => { if (!confirm('Eliminar?')) return; await fetch(`/api/admin/phones?id=${id}`, { method:'DELETE' }); load(); };
   return (
     <div className="container">
@@ -33,6 +67,7 @@ export default function PhonesAdmin(){
             <option value="0">No funciona</option>
           </select>
           <input placeholder="Bandas (ej: LTE B3/B7)" value={form.bands} onChange={e=>setForm({...form, bands:e.target.value})} style={{padding:8, border:'1px solid #e5e7eb', borderRadius:8, minWidth:220}}/>
+          <input placeholder="Provincias (ej: La Habana, Matanzas)" value={form.provinces} onChange={e=>setForm({...form, provinces:e.target.value})} style={{padding:8, border:'1px solid #e5e7eb', borderRadius:8, minWidth:220}}/>
           <input placeholder="Observaciones" value={form.observations} onChange={e=>setForm({...form, observations:e.target.value})} style={{padding:8, border:'1px solid #e5e7eb', borderRadius:8, minWidth:260}}/>
           <button className="btn blue" onClick={save}>{editing ? 'Guardar cambios' : 'Crear'}</button>
           {editing && <button className="btn gray" onClick={()=>{ setEditing(null); setForm({ commercial_name:'', model:'', works:true, bands:'', observations:'' }); }}>Cancelar</button>}
@@ -40,7 +75,7 @@ export default function PhonesAdmin(){
       </div>
       <div className="card">
         <table className="table">
-          <thead><tr><th>ID</th><th>Nombre</th><th>Modelo</th><th>OK</th><th>Bandas</th><th>Obs.</th><th></th></tr></thead>
+          <thead><tr><th>ID</th><th>Nombre</th><th>Modelo</th><th>OK</th><th>Bandas</th><th>Provincias</th><th>Obs.</th><th></th></tr></thead>
           <tbody>
             {rows.map(r=> (
               <tr key={r.id}>
@@ -49,6 +84,7 @@ export default function PhonesAdmin(){
                 <td>{r.model}</td>
                 <td>{r.works ? '✅':'❌'}</td>
                 <td>{r.bands}</td>
+                <td>{r.provinces}</td>
                 <td>{r.observations}</td>
                 <td>
                   <button className="btn gray" onClick={()=>edit(r)}>Editar</button>{' '}
