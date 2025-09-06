@@ -1,5 +1,5 @@
 
-import { getAdminClient } from '../../../lib/supabase';
+import { getAdminClient } from '../../lib/supabase';
 export default async function handler(req, res){
   const out = { bot: !!process.env.BOT_TOKEN, bot_reason:'' };
   try{

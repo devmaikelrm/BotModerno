@@ -1,6 +1,6 @@
 
-import { getBot } from '../../../lib/bot';
-import { getAdminClient } from '../../../lib/supabase';
+import { getBot } from '../../lib/bot';
+import { getAdminClient } from '../../lib/supabase';
 export const config = { api: { bodyParser: { sizeLimit: '1mb' } } };
 let botInstance;
 function bot(){ if (!botInstance) botInstance = getBot(); return botInstance; }
