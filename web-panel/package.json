@@ -1,5 +1,5 @@
 {
-  "name": "web-panel",
+  "name": "botmoderno-web-panel",
   "private": true,
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 5000",

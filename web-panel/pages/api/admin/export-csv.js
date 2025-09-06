@@ -1,6 +1,5 @@
 
 import { getAdminClient } from '../../../../lib/supabase';
-
 function toCSV(rows){
   if (!rows || !rows.length) return '';
   const headers = Object.keys(rows[0]);
@@ -13,7 +12,6 @@ function toCSV(rows){
   for (const r of rows) lines.push(headers.map(h => esc(r[h])).join(','));
   return lines.join('\n');
 }
-
 export default async function handler(req, res){
   const db = getAdminClient();
   const { data, error } = await db.from('phones').select('*').order('created_at', { ascending:false });
