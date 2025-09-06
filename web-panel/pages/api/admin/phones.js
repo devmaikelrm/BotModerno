@@ -1,5 +1,5 @@
 
-import { getAdminClient } from '../../../../lib/supabase';
+import { getAdminClient } from '../../../lib/supabase';
 export default async function handler(req, res){
   const db = getAdminClient();
   if (req.method === 'GET'){

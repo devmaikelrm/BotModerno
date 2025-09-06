@@ -1,5 +1,5 @@
 
-import { getAdminClient } from '../../../../lib/supabase';
+import { getAdminClient } from '../../../lib/supabase';
 function toCSV(rows){
   if (!rows || !rows.length) return '';
   const headers = Object.keys(rows[0]);

@@ -1,5 +1,5 @@
 
-import { getAdminClient } from '../../../../lib/supabase';
+import { getAdminClient } from '../../../lib/supabase';
 export default async function handler(req, res){
   const db = getAdminClient();
   const { data, error } = await db.from('phones').select('*').order('created_at', { ascending:false });
