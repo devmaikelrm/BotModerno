@@ -1,25 +1,25 @@
-// web-panel/middleware.js
-// Edge-compatible Basic Auth using atob (no Buffer)
-export const config = { matcher: ['/((?!_next/|api/health).*)'] };
 
-function parseAuth(header) {
-  if (!header?.startsWith('Basic ')) return null;
-  const b64 = header.slice(6);
-  const [u, p] = atob(b64).split(':');
-  return { u, p };
-}
+import { NextResponse } from 'next/server';
 
-export default function middleware(req) {
-  const url = new URL(req.url);
-  const auth = parseAuth(req.headers.get('authorization'));
-  const USER = process.env.PANEL_USER;
-  const PASS = process.env.PANEL_PASS;
+export const config = {
+  matcher: ['/admin/:path*','/api/admin/:path*']
+};
 
-  if (!auth || auth.u !== USER || auth.p !== PASS) {
-    return new Response('Auth required', {
-      status: 401,
-      headers: { 'WWW-Authenticate': 'Basic realm="Panel"' }
-    });
+export function middleware(req){
+  const user = process.env.DASHBOARD_USER || 'admin';
+  const pass = process.env.DASHBOARD_PASS || 'admin';
+
+  const auth = req.headers.get('authorization') || '';
+  const [scheme, encoded] = auth.split(' ');
+  if (scheme === 'Basic' && encoded) {
+    const decoded = Buffer.from(encoded, 'base64').toString('utf8');
+    const index = decoded.indexOf(':');
+    const u = decoded.substring(0, index);
+    const p = decoded.substring(index + 1);
+    if (u === user && p === pass) return NextResponse.next();
   }
-  return undefined;
+
+  const res = new NextResponse('Authentication required', { status: 401 });
+  res.headers.set('WWW-Authenticate', 'Basic realm="CubaModel Admin"');
+  return res;
 }
