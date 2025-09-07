@@ -68,6 +68,8 @@ export default function BotConfig() {
   });
   const [status, setStatus] = useState({ webhook: false, bot: false });
   const [loading, setLoading] = useState(false);
+  const [autoSetupResults, setAutoSetupResults] = useState(null);
+  const [isAutoSetupRunning, setIsAutoSetupRunning] = useState(false);
 
   useEffect(() => {
     fetchStatus();
@@ -102,6 +104,54 @@ export default function BotConfig() {
       alert('Error al configurar webhook: ' + error.message);
     }
     setLoading(false);
+  };
+
+  const runAutoSetup = async () => {
+    setIsAutoSetupRunning(true);
+    setAutoSetupResults(null);
+    
+    try {
+      const res = await fetch('/api/auto-setup');
+      const data = await res.json();
+      setAutoSetupResults(data);
+      
+      if (data.success) {
+        alert('🎉 ¡Configuración automática completada exitosamente!');
+        fetchStatus();
+      } else {
+        alert('⚠️ Configuración completada con algunos problemas. Revisa los detalles.');
+      }
+    } catch (error) {
+      setAutoSetupResults({
+        success: false,
+        error: 'Auto-setup failed',
+        details: error.message
+      });
+      alert('Error en configuración automática: ' + error.message);
+    }
+    
+    setIsAutoSetupRunning(false);
+  };
+
+  const deployToVercel = async () => {
+    try {
+      const res = await fetch('/api/smart-deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          repoUrl: 'https://github.com/your-username/cubamodel-bot'
+        })
+      });
+      const data = await res.json();
+      
+      if (data.success) {
+        window.open(data.deployUrl, '_blank');
+      } else {
+        alert('Error al preparar deployment: ' + data.error);
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
   };
 
   return (
@@ -183,36 +233,124 @@ export default function BotConfig() {
           </div>
           
           <div className="section card">
-            <h3>🚀 Quick Deploy to Vercel</h3>
-            <div className="subtitle">Deploy your bot and web panel to Vercel with one click</div>
-            <div className="row">
+            <h3>⚡ Configuración Automática</h3>
+            <div className="subtitle">Configura todo automáticamente con un solo click</div>
+            
+            <div style={{display:'grid', gap:'16px', gridTemplateColumns:'1fr 1fr'}}>
               <div>
-                <p style={{margin:'0 0 8px', fontSize:'14px'}}>
-                  Ready to deploy your CubaModel Bot to production? This will:
-                </p>
-                <ul style={{margin:'0', paddingLeft:'20px', fontSize:'14px', color:'var(--muted)'}}>
-                  <li>Deploy the web panel to Vercel</li>
-                  <li>Configure environment variables</li>
-                  <li>Set up the webhook automatically</li>
-                  <li>Connect to your Supabase database</li>
-                </ul>
-              </div>
-              <div style={{display:'flex', gap:'12px', flexDirection:'column', alignItems:'flex-end'}}>
-                <a 
-                  href="https://vercel.com/new/git/external?repository-url=https%3A%2F%2Fgithub.com%2Fyour-username%2Fcubamodel-bot" 
-                  className="btn blue"
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{whiteSpace:'nowrap'}}
+                <h4 style={{margin:'0 0 12px', fontSize:'15px', fontWeight:'600'}}>🤖 Setup Automático</h4>
+                <div style={{marginBottom:'16px'}}>
+                  <p style={{margin:'0 0 8px', fontSize:'14px'}}>
+                    Configura automáticamente:
+                  </p>
+                  <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
+                    <li>Verifica variables de entorno</li>
+                    <li>Conecta y prueba la base de datos</li>
+                    <li>Valida el token del bot</li>
+                    <li>Configura webhook automáticamente</li>
+                    <li>Prepara dashboard de admin</li>
+                  </ul>
+                </div>
+                <button 
+                  className="btn green"
+                  onClick={runAutoSetup}
+                  disabled={isAutoSetupRunning}
+                  style={{width:'100%'}}
                 >
-                  🚀 Deploy to Vercel
-                </a>
-                <small style={{color:'var(--muted)', textAlign:'right'}}>
-                  Make sure to add your environment variables in Vercel
-                </small>
+                  {isAutoSetupRunning ? '⏳ Configurando...' : '⚡ Auto-Setup Completo'}
+                </button>
+              </div>
+              
+              <div>
+                <h4 style={{margin:'0 0 12px', fontSize:'15px', fontWeight:'600'}}>🚀 Deploy Inteligente</h4>
+                <div style={{marginBottom:'16px'}}>
+                  <p style={{margin:'0 0 8px', fontSize:'14px'}}>
+                    Deploy optimizado que incluye:
+                  </p>
+                  <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
+                    <li>Variables pre-configuradas</li>
+                    <li>Deploy automático a Vercel</li>
+                    <li>Configuración post-deploy</li>
+                    <li>Webhook automático</li>
+                    <li>Monitoreo incluido</li>
+                  </ul>
+                </div>
+                <button 
+                  className="btn blue"
+                  onClick={deployToVercel}
+                  style={{width:'100%'}}
+                >
+                  🚀 Smart Deploy to Vercel
+                </button>
               </div>
             </div>
           </div>
+          
+          {autoSetupResults && (
+            <div className="section card">
+              <h3>📋 Resultados de Configuración</h3>
+              <div className="subtitle">Estado del setup automático</div>
+              
+              <div style={{marginTop:'16px'}}>
+                {autoSetupResults.summary && (
+                  <div style={{
+                    padding:'16px', 
+                    background: autoSetupResults.summary.success ? '#dcfce7' : '#fef3c7',
+                    borderRadius:'12px',
+                    marginBottom:'16px'
+                  }}>
+                    <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
+                      <span style={{fontSize:'24px'}}>
+                        {autoSetupResults.summary.success ? '🎉' : '⚠️'}
+                      </span>
+                      <div>
+                        <div style={{fontWeight:'600', fontSize:'16px'}}>
+                          {autoSetupResults.summary.success ? '¡Configuración Completada!' : 'Configuración con Problemas'}
+                        </div>
+                        <div style={{fontSize:'14px', color:'var(--muted)'}}>
+                          {autoSetupResults.summary.completedSteps}/{autoSetupResults.summary.totalSteps} pasos completados 
+                          ({autoSetupResults.summary.percentage}%)
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                
+                <div style={{display:'grid', gap:'8px'}}>
+                  {autoSetupResults.steps?.map((step, index) => (
+                    <div key={index} style={{
+                      display:'flex',
+                      alignItems:'center',
+                      gap:'12px',
+                      padding:'12px',
+                      background:'#f9fafb',
+                      borderRadius:'8px',
+                      border:'1px solid var(--border)'
+                    }}>
+                      <span style={{fontSize:'18px'}}>
+                        {step.status === 'success' ? '✅' : step.status === 'error' ? '❌' : step.status === 'warning' ? '⚠️' : '⏳'}
+                      </span>
+                      <div style={{flex:1}}>
+                        <div style={{fontWeight:'600', fontSize:'14px'}}>{step.name}</div>
+                        <div style={{fontSize:'13px', color:'var(--muted)'}}>{step.message}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                
+                {autoSetupResults.summary?.nextSteps && (
+                  <div style={{marginTop:'16px'}}>
+                    <h4 style={{margin:'0 0 8px', fontSize:'14px', fontWeight:'600'}}>Próximos Pasos:</h4>
+                    <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
+                      {autoSetupResults.summary.nextSteps.map((step, index) => (
+                        <li key={index}>{step}</li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>
