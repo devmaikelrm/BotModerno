@@ -154,7 +154,7 @@ export default function WebhookStatus() {
             <div className="card">
               <h3>🌐 Webhook URL</h3>
               <div style={{wordBreak:'break-all', fontSize:'13px', color:'var(--muted)', marginBottom:'12px'}}>
-                {window.location.origin}/api/webhook
+                {typeof window !== 'undefined' ? window.location.origin : '[domain]'}/api/webhook
               </div>
               <div className="row">
                 <span>Protocol:</span>

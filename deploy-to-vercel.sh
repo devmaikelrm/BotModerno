@@ -34,10 +34,11 @@ echo ""
 
 echo ""
 echo "=== Configuración de Supabase ==="
-echo "Usando las credenciales ya configuradas en el archivo .env:"
-echo "SUPABASE_URL: https://dlnqkmcacfwhbwdjxczw.supabase.co"
-echo "SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNTUwMTYsImV4cCI6MjA3MTgzMTAxNn0.ytem47gk5X7wVBiT_ke-nudkL9kGWdIR1ScxDcMpWck"
-echo "SUPABASE_SERVICE_ROLE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjI1NTAxNiwiZXhwIjoyMDcxODMxMDE2fQ.gVRO0hc49Iaqh7Wh5toR4kifVkGIiaRd2BbHhP_vl28"
+read -p "Ingresa tu SUPABASE_URL: " SUPABASE_URL
+read -sp "Ingresa tu SUPABASE_SERVICE_ROLE_KEY: " SUPABASE_SERVICE_ROLE_KEY
+echo ""
+read -sp "Ingresa tu SUPABASE_ANON_KEY: " SUPABASE_ANON_KEY
+echo ""
 
 echo ""
 echo "Iniciando sesión en Vercel..."
@@ -52,11 +53,11 @@ echo "Configurando variables de entorno..."
 vercel env add BOT_TOKEN production --cwd web-panel <<< "$BOT_TOKEN"
 vercel env add ADMIN_TG_IDS production --cwd web-panel <<< "$ADMIN_TG_IDS"
 vercel env add ALLOWED_CHAT_IDS production --cwd web-panel <<< "$ALLOWED_CHAT_IDS"
-vercel env add SUPABASE_URL production --cwd web-panel <<< "https://dlnqkmcacfwhbwdjxczw.supabase.co"
-vercel env add SUPABASE_ANON_KEY production --cwd web-panel <<< "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNTUwMTYsImV4cCI6MjA3MTgzMTAxNn0.ytem47gk5X7wVBiT_ke-nudkL9kGWdIR1ScxDcMpWck"
-vercel env add SUPABASE_SERVICE_ROLE_KEY production --cwd web-panel <<< "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjI1NTAxNiwiZXhwIjoyMDcxODMxMDE2fQ.gVRO0hc49Iaqh7Wh5toR4kifVkGIiaRd2BbHhP_vl28"
-vercel env add NEXT_PUBLIC_SUPABASE_URL production --cwd web-panel <<< "https://dlnqkmcacfwhbwdjxczw.supabase.co"
-vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production --cwd web-panel <<< "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTYyNTUwMTYsImV4cCI6MjA3MTgzMTAxNn0.ytem47gk5X7wVBiT_ke-nudkL9kGWdIR1ScxDcMpWck"
+vercel env add SUPABASE_URL production --cwd web-panel <<< "$SUPABASE_URL"
+vercel env add SUPABASE_ANON_KEY production --cwd web-panel <<< "$SUPABASE_ANON_KEY"
+vercel env add SUPABASE_SERVICE_ROLE_KEY production --cwd web-panel <<< "$SUPABASE_SERVICE_ROLE_KEY"
+vercel env add NEXT_PUBLIC_SUPABASE_URL production --cwd web-panel <<< "$SUPABASE_URL"
+vercel env add NEXT_PUBLIC_SUPABASE_ANON_KEY production --cwd web-panel <<< "$SUPABASE_ANON_KEY"
 vercel env add DASHBOARD_USER production --cwd web-panel <<< "$DASHBOARD_USER"
 vercel env add DASHBOARD_PASS production --cwd web-panel <<< "$DASHBOARD_PASS"
 
