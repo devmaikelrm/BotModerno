@@ -36,7 +36,7 @@ export default function Home(){
               <span>⚡</span>
               <span>Dashboard</span>
             </a>
-            <a href="/" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
+            <a href="/bot-config" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
               <span>⚙️</span>
               <span>Bot Configuration</span>
             </a>
@@ -44,7 +44,7 @@ export default function Home(){
               <span>🗄️</span>
               <span>Database Setup</span>
             </a>
-            <a href="/reports" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
+            <a href="/webhook-status" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
               <span>🔗</span>
               <span>Webhook Status</span>
             </a>
@@ -56,11 +56,11 @@ export default function Home(){
               <span>📤</span>
               <span>File Storage</span>
             </a>
-            <a href="/reports" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
+            <a href="/analytics" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
               <span>📊</span>
               <span>Analytics</span>
             </a>
-            <a href="/reports" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
+            <a href="/error-logs" style={{display:'flex', alignItems:'center', gap:'12px', padding:'12px 16px', borderRadius:'12px', color:'var(--muted)', textDecoration:'none', fontWeight:'600'}}>
               <span>⚠️</span>
               <span>Error Logs</span>
             </a>
