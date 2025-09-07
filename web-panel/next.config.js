@@ -7,11 +7,11 @@ module.exports = {
     serverComponentsExternalPackages: ['telegraf']
   },
   
-  // Configuración para Cloudflare Pages
-  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
-  trailingSlash: true,
+  // Configuración para Cloudflare Pages - deshabilitar export por ahora
+  // output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  trailingSlash: false,
   images: {
-    unoptimized: true // Necesario para exportación estática
+    unoptimized: true
   },
   
   // Allow all hosts for development
