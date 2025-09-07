@@ -6,10 +6,19 @@ module.exports = {
   experimental: {
     serverComponentsExternalPackages: ['telegraf']
   },
-  // Allow all hosts for Replit proxy compatibility
+  
+  // Configuración para Cloudflare Pages
+  output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
+  trailingSlash: true,
+  images: {
+    unoptimized: true // Necesario para exportación estática
+  },
+  
+  // Allow all hosts for development
   async rewrites() {
     return []
   },
+  
   async headers() {
     return [
       {
@@ -23,10 +32,11 @@ module.exports = {
       }
     ]
   },
-  // Allow all hosts for development in Replit
+  
   async redirects() {
     return []
   },
+  
   // Override the host check for development
   ...(process.env.NODE_ENV === 'development' && {
     webpack: (config, { dev }) => {
