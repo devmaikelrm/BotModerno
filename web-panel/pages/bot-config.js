@@ -99,13 +99,13 @@ export default function BotConfig() {
       const res = await fetch('/api/run-setup');
       const data = await res.json();
       if (data.ok) {
-        alert('Webhook configurado exitosamente!');
+        showToast('Webhook configurado exitosamente!', { type: 'success' });
         fetchStatus();
       } else {
-        alert('Error: ' + data.message);
+        showToast('Error: ' + data.message, { type: 'error' });
       }
     } catch (error) {
-      alert('Error al configurar webhook: ' + error.message);
+      showToast('Error al configurar webhook: ' + error.message, { type: 'error' });
     }
     setLoading(false);
   };
