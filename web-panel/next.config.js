@@ -22,5 +22,21 @@ module.exports = {
         ]
       }
     ]
-  }
+  },
+  // Allow all hosts for development in Replit
+  async redirects() {
+    return []
+  },
+  // Override the host check for development
+  ...(process.env.NODE_ENV === 'development' && {
+    webpack: (config, { dev }) => {
+      if (dev) {
+        config.watchOptions = {
+          ...config.watchOptions,
+          ignored: ['**/node_modules/**', '**/.next/**']
+        }
+      }
+      return config
+    }
+  })
 };
