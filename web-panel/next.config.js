@@ -22,7 +22,5 @@ module.exports = {
         ]
       }
     ]
-  },
-  // Allow all hosts
-  allowedHosts: true
+  }
 };
