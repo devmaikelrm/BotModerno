@@ -6,6 +6,54 @@ export default async function handler(req, res) {
     const host = req.headers['x-forwarded-host'] || req.headers.host;
     const isLocal = host.includes('localhost') || host.includes('127.0.0.1') || host.includes('replit');
 
+    // Environment variables with smart defaults
+    const environmentVariables = {
+      BOT_TOKEN: {
+        required: true,
+        description: 'Your Telegram bot token from @BotFather',
+        example: '1234567890:AAHdqTcvbXorGzw5P4M-example',
+        value: process.env.BOT_TOKEN ? 'CONFIGURED' : 'REQUIRED'
+      },
+      SUPABASE_URL: {
+        required: true,
+        description: 'Your Supabase project URL',
+        example: 'https://your-project.supabase.co',
+        value: process.env.SUPABASE_URL ? 'CONFIGURED' : 'REQUIRED'
+      },
+      SUPABASE_SERVICE_ROLE_KEY: {
+        required: true,
+        description: 'Your Supabase service role key (secret)',
+        example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
+        value: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'CONFIGURED' : 'REQUIRED'
+      },
+      DASHBOARD_USER: {
+        required: true,
+        description: 'Username for admin dashboard access',
+        example: 'admin',
+        default: 'admin',
+        value: process.env.DASHBOARD_USER || 'admin'
+      },
+      DASHBOARD_PASS: {
+        required: true,
+        description: 'Secure password for admin dashboard',
+        example: 'SecurePassword123!',
+        generate: true,
+        value: process.env.DASHBOARD_PASS ? 'CONFIGURED' : generatePassword()
+      },
+      NODE_ENV: {
+        required: false,
+        description: 'Environment mode',
+        default: 'production',
+        value: 'production'
+      },
+      VERCEL: {
+        required: false,
+        description: 'Vercel deployment flag',
+        default: '1',
+        value: '1'
+      }
+    };
+
     // Generate optimized deployment configuration
     const deployConfig = {
       // Auto-detect project type
@@ -15,52 +63,7 @@ export default async function handler(req, res) {
       installCommand: 'npm install',
       
       // Environment variables with smart defaults
-      environmentVariables: {
-        BOT_TOKEN: {
-          required: true,
-          description: 'Your Telegram bot token from @BotFather',
-          example: '1234567890:AAHdqTcvbXorGzw5P4M-example',
-          value: process.env.BOT_TOKEN ? 'CONFIGURED' : 'REQUIRED'
-        },
-        SUPABASE_URL: {
-          required: true,
-          description: 'Your Supabase project URL',
-          example: 'https://your-project.supabase.co',
-          value: process.env.SUPABASE_URL ? 'CONFIGURED' : 'REQUIRED'
-        },
-        SUPABASE_SERVICE_ROLE_KEY: {
-          required: true,
-          description: 'Your Supabase service role key (secret)',
-          example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...',
-          value: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'CONFIGURED' : 'REQUIRED'
-        },
-        DASHBOARD_USER: {
-          required: true,
-          description: 'Username for admin dashboard access',
-          example: 'admin',
-          default: 'admin',
-          value: process.env.DASHBOARD_USER || 'admin'
-        },
-        DASHBOARD_PASS: {
-          required: true,
-          description: 'Secure password for admin dashboard',
-          example: 'SecurePassword123!',
-          generate: true,
-          value: process.env.DASHBOARD_PASS ? 'CONFIGURED' : generatePassword()
-        },
-        NODE_ENV: {
-          required: false,
-          description: 'Environment mode',
-          default: 'production',
-          value: 'production'
-        },
-        VERCEL: {
-          required: false,
-          description: 'Vercel deployment flag',
-          default: '1',
-          value: '1'
-        }
-      },
+      environmentVariables,
 
       // Vercel-specific optimizations
       vercelConfig: {
@@ -83,7 +86,7 @@ export default async function handler(req, res) {
         ],
         env: {
           ...Object.fromEntries(
-            Object.entries(deployConfig.environmentVariables)
+            Object.entries(environmentVariables)
               .filter(([key, config]) => config.value && config.value !== 'REQUIRED')
               .map(([key, config]) => [key, config.value])
           )
