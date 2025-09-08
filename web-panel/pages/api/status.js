@@ -1,17 +1,98 @@
 
 import { getAdminClient } from '../../lib/supabase';
-export default async function handler(req, res){
-  const out = { bot: !!process.env.BOT_TOKEN, bot_reason:'' };
-  try{
+
+async function checkBotStatus() {
+  try {
+    // Verificar si hay un webhook configurado en Supabase
     const db = getAdminClient();
-    const { error } = await db.from('phones').select('id', { count:'exact', head:true });
-    out.db = !error; if (error) out.db_reason = error.message;
-    const since = new Date(Date.now() - 7*24*60*60*1000).toISOString();
-    const { data: ev, error: e2 } = await db.from('events').select('tg_id').gte('created_at', since);
-    out.active_users = e2 ? 0 : new Set((ev||[]).map(x=>x.tg_id).filter(Boolean)).size;
-  }catch(e){
-    out.db = false; out.db_reason = String(e?.message||e); out.active_users = 0;
+    const { data: webhookData, error } = await db
+      .from('bot_config')
+      .select('webhook_url, bot_token, is_active')
+      .eq('is_active', true)
+      .single();
+    
+    if (error || !webhookData) {
+      return { 
+        online: false, 
+        reason: 'No bot configuration found',
+        hasBotToken: false,
+        webhookSet: false
+      };
+    }
+
+    // Verificar si el webhook está configurado
+    const webhookSet = !!webhookData.webhook_url;
+    const hasBotToken = !!webhookData.bot_token;
+
+    // Verificar actividad reciente del bot
+    const since = new Date(Date.now() - 24*60*60*1000).toISOString(); // últimas 24h
+    const { data: recentEvents, error: eventsError } = await db
+      .from('events')
+      .select('id')
+      .gte('created_at', since)
+      .limit(1);
+
+    const hasRecentActivity = !eventsError && recentEvents && recentEvents.length > 0;
+
+    return {
+      online: hasBotToken && webhookSet && hasRecentActivity,
+      reason: !hasBotToken ? 'No bot token' : !webhookSet ? 'Webhook not set' : !hasRecentActivity ? 'No recent activity' : '',
+      hasBotToken,
+      webhookSet,
+      hasRecentActivity,
+      webhookUrl: webhookData.webhook_url
+    };
+  } catch (error) {
+    return {
+      online: false,
+      reason: `Error checking bot: ${error.message}`,
+      hasBotToken: false,
+      webhookSet: false
+    };
   }
-  out.vercel = true;
-  res.status(200).json(out);
+}
+
+export default async function handler(req, res) {
+  const [botStatus, dbStatus] = await Promise.all([
+    checkBotStatus(),
+    checkDatabaseStatus()
+  ]);
+
+  res.status(200).json({
+    bot: botStatus,
+    db: dbStatus,
+    timestamp: new Date().toISOString()
+  });
+}
+
+async function checkDatabaseStatus() {
+  try {
+    const db = getAdminClient();
+    const { error } = await db.from('phones').select('id', { count: 'exact', head: true });
+    
+    if (error) {
+      return { ok: false, reason: error.message };
+    }
+
+    // Verificar usuarios activos en las últimas 7 días
+    const since = new Date(Date.now() - 7*24*60*60*1000).toISOString();
+    const { data: events, error: eventsError } = await db
+      .from('events')
+      .select('tg_id')
+      .gte('created_at', since);
+
+    const activeUsers = eventsError ? 0 : new Set((events || []).map(x => x.tg_id).filter(Boolean)).size;
+
+    return {
+      ok: true,
+      reason: '',
+      activeUsers
+    };
+  } catch (error) {
+    return {
+      ok: false,
+      reason: String(error?.message || error),
+      activeUsers: 0
+    };
+  }
 }

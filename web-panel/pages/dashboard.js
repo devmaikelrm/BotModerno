@@ -2,15 +2,35 @@
 import { adminClient } from "../lib/serverClient";
 
 async function getBotStatus() {
-  const url = process.env.BOT_STATUS_URL;
-  if (!url) return { ok: false, reason: "No bot token" };
   try {
-    const r = await fetch(url, { cache: "no-store" });
-    const j = await r.json();
-    const ok = !!(j?.hasBotToken && j?.webhookSet);
-    return { ok, reason: ok ? "" : (!j?.hasBotToken ? "No bot token" : "No bot token"), details: j };
-  } catch {
-    return { ok: false, reason: "No bot token" };
+    const baseUrl = process.env.VERCEL_URL 
+      ? `https://${process.env.VERCEL_URL}` 
+      : 'http://localhost:5000';
+    
+    const response = await fetch(`${baseUrl}/api/status`, { 
+      cache: "no-store",
+      headers: {
+        'User-Agent': 'BotModerno-Dashboard'
+      }
+    });
+    
+    if (!response.ok) {
+      return { ok: false, reason: `HTTP ${response.status}` };
+    }
+    
+    const data = await response.json();
+    return {
+      ok: data.bot?.online || false,
+      reason: data.bot?.reason || 'Unknown error',
+      details: data.bot,
+      db: data.db
+    };
+  } catch (error) {
+    return { 
+      ok: false, 
+      reason: `Connection error: ${error.message}`,
+      details: null
+    };
   }
 }
 
@@ -93,6 +113,11 @@ function Sidebar() {
 }
 
 function StatusCard({ title, status, reason, icon, bgColor = "bg-white" }) {
+  const isOnline = status === "Online" || status === "Connected";
+  const isError = status === "Offline" || status === "Error";
+  
+  const statusColor = isOnline ? "text-green-600" : isError ? "text-red-600" : "text-blue-600";
+  
   return (
     <div className={`${bgColor} rounded-xl p-6 border border-gray-200`}>
       <div className="flex items-center justify-between mb-4">
@@ -102,8 +127,9 @@ function StatusCard({ title, status, reason, icon, bgColor = "bg-white" }) {
             <div className="font-semibold text-gray-900">{title}</div>
           </div>
         </div>
+        <div className={`w-3 h-3 rounded-full ${isOnline ? 'bg-green-500' : isError ? 'bg-red-500' : 'bg-yellow-500'}`}></div>
       </div>
-      <div className="text-3xl font-bold text-red-600 mb-2">
+      <div className={`text-3xl font-bold ${statusColor} mb-2`}>
         {status}
       </div>
       {reason && <div className="text-sm text-gray-600">• {reason}</div>}
@@ -140,27 +166,31 @@ export default function Dashboard({ bot, dbs, activeUsers }) {
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
             <StatusCard 
               title="Bot Status" 
-              status="Error" 
-              reason="No bot token"
+              status={bot.ok ? "Online" : "Offline"} 
+              reason={bot.reason || (bot.ok ? "Connected" : "Not connected")}
               icon="🤖"
+              bgColor={bot.ok ? "bg-green-50" : "bg-red-50"}
             />
             <StatusCard 
               title="Supabase DB" 
-              status="Error" 
-              reason="No client available"
+              status={dbs.ok ? "Connected" : "Error"} 
+              reason={dbs.reason || (dbs.ok ? "Database accessible" : "Connection failed")}
               icon="🗄️"
+              bgColor={dbs.ok ? "bg-green-50" : "bg-red-50"}
             />
             <StatusCard 
-              title="Vercel Deploy" 
-              status="Error" 
-              reason="No bot token"
+              title="Web Panel" 
+              status="Online" 
+              reason="Vercel deployment active"
               icon="☁️"
+              bgColor="bg-green-50"
             />
             <StatusCard 
               title="Active Users" 
-              status={activeUsers}
+              status={bot.db?.activeUsers || activeUsers || 0}
               reason="from last week"
               icon="👥"
+              bgColor="bg-blue-50"
             />
           </div>
 
