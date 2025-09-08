@@ -6,6 +6,7 @@
     "build": "next build", 
     "export": "next export",
     "build:cloudflare": "next build && next export",
+    "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",
     "dev:vercel": "next dev"
   },
