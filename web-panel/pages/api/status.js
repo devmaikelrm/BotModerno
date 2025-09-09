@@ -34,9 +34,12 @@ async function checkBotStatus() {
 
     const hasRecentActivity = !eventsError && recentEvents && recentEvents.length > 0;
 
+    // El bot está online si tiene token y webhook configurado, independientemente de la actividad reciente
+    const isOnline = hasBotToken && webhookSet;
+    
     return {
-      online: hasBotToken && webhookSet && hasRecentActivity,
-      reason: !hasBotToken ? 'No bot token' : !webhookSet ? 'Webhook not set' : !hasRecentActivity ? 'No recent activity' : '',
+      online: isOnline,
+      reason: !hasBotToken ? 'No bot token' : !webhookSet ? 'Webhook not set' : hasRecentActivity ? 'Active' : 'Configured but no recent activity',
       hasBotToken,
       webhookSet,
       hasRecentActivity,
