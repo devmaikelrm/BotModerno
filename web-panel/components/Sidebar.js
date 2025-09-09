@@ -2,11 +2,12 @@ import React from 'react';
 
 export default function Sidebar({ currentPage = 'dashboard' }) {
   const menuItems = [
-    { icon: '⚡', label: 'Dashboard', href: '/dashboard', id: 'dashboard' },
+    { icon: '⚡', label: 'Dashboard', href: '/', id: 'dashboard' },
     { icon: '🤖', label: 'Bot Config', href: '/bot-config', id: 'bot-config' },
     { icon: '📱', label: 'Phones', href: '/admin/phones', id: 'database' },
     { icon: '🔗', label: 'Webhook', href: '/webhook-status', id: 'webhook' },
-    { icon: '👥', label: 'Users', href: '/approved', id: 'users' },
+    { icon: '🛡️', label: 'Moderation', href: '/moderation', id: 'moderation' },
+    { icon: '👥', label: 'Approved', href: '/approved', id: 'users' },
     { icon: '📊', label: 'Analytics', href: '/analytics', id: 'analytics' },
     { icon: '📤', label: 'Exports', href: '/exports', id: 'exports' },
     { icon: '📋', label: 'Reports', href: '/reports', id: 'reports' }

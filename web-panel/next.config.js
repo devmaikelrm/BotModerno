@@ -34,7 +34,13 @@ module.exports = {
   },
   
   async redirects() {
-    return []
+    return [
+      {
+        source: '/dashboard',
+        destination: '/',
+        permanent: true
+      }
+    ]
   },
   
   // Override the host check for development

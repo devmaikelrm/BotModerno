@@ -20,7 +20,7 @@ export default async function handler(req, res) {
       const { error } = await db.rpc("exec_sql", { sql_text: sql }).single().catch(() => ({ error: { message: "Define RPC exec_sql first" } }));
       if (error) throw new Error(`${path.basename(f)}: ${error.message}`);
     }
-    return res.redirect("/dashboard");
+    return res.redirect("/");
   } catch (e) {
     return res.status(500).send("Setup error: " + (e?.message || e));
   }

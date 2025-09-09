@@ -67,7 +67,7 @@ function Sidebar() {
         </div>
         
         <nav className="space-y-2">
-          <a href="/dashboard" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white">
+          <a href="/" className="flex items-center gap-3 px-3 py-2 rounded-lg bg-blue-600 text-white">
             <span>⚡</span>
             <span>Dashboard</span>
           </a>

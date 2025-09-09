@@ -1,67 +1,7 @@
 import { useEffect, useState } from 'react';
+import Sidebar from '../components/Sidebar';
 
-function Sidebar({ currentPage = 'bot-config' }) {
-  const menuItems = [
-    { icon: '⚡', label: 'Dashboard', href: '/', id: 'dashboard' },
-    { icon: '🤖', label: 'Bot Config', href: '/bot-config', id: 'bot-config' },
-    { icon: '📱', label: 'Phones', href: '/admin/phones', id: 'database' },
-    { icon: '🔗', label: 'Webhook', href: '/webhook-status', id: 'webhook' },
-    { icon: '👥', label: 'Users', href: '/approved', id: 'users' },
-    { icon: '📊', label: 'Analytics', href: '/analytics', id: 'analytics' },
-    { icon: '📤', label: 'Exports', href: '/exports', id: 'exports' },
-    { icon: '📋', label: 'Reports', href: '/reports', id: 'reports' }
-  ];
-
-  return (
-    <div className="w-72 bg-white border-r border-gray-200 min-h-screen shadow-sm">
-      <div className="p-6">
-        {/* Logo */}
-        <div className="flex items-center space-x-3 mb-8">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl flex items-center justify-center text-white font-bold text-lg shadow-lg">
-            C
-          </div>
-          <div>
-            <div className="font-bold text-gray-900 text-lg">CubaModel Bot</div>
-            <div className="text-sm text-gray-500">Admin Dashboard</div>
-          </div>
-        </div>
-        
-        {/* Navigation */}
-        <nav className="space-y-2">
-          {menuItems.map((item) => (
-            <a
-              key={item.id}
-              href={item.href}
-              className={`flex items-center space-x-3 px-4 py-3 rounded-xl transition-all duration-200 group ${
-                currentPage === item.id 
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-lg'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
-              }`}
-            >
-              <span className="text-lg">{item.icon}</span>
-              <span className="font-medium">{item.label}</span>
-              {currentPage !== item.id && (
-                <span className="ml-auto opacity-0 group-hover:opacity-100 transition-opacity">→</span>
-              )}
-            </a>
-          ))}
-        </nav>
-        
-        {/* Status */}
-        <div className="mt-8 p-4 bg-gradient-to-r from-green-50 to-emerald-50 rounded-xl border border-green-200">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium text-green-800">Status</span>
-            <div className="flex items-center space-x-2">
-              <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-              <span className="text-xs text-green-700">Online</span>
-            </div>
-          </div>
-          <div className="text-xs text-green-600 mt-1">v2.1.0</div>
-        </div>
-      </div>
-    </div>
-  );
-}
+// Use shared Sidebar component for consistent layout
 
 export default function BotConfig() {
   const [config, setConfig] = useState({
