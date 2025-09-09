@@ -65,7 +65,7 @@ function Sidebar({ currentPage = 'bot-config' }) {
 
 export default function BotConfig() {
   const [config, setConfig] = useState({
-    botToken: process.env.BOT_TOKEN ? '••••••••••••••••••••' : '',
+    botToken: '',
     webhookUrl: '',
     adminIds: '',
     allowedChats: ''
@@ -83,10 +83,17 @@ export default function BotConfig() {
     try {
       const res = await fetch('/api/status');
       const data = await res.json();
-      setStatus(data);
+      
+      // Actualizar el estado basado en la respuesta de la API
+      setStatus({
+        bot: data.bot?.hasBotToken || false,
+        webhook: data.bot?.webhookSet || false
+      });
+      
       setConfig(prev => ({
         ...prev,
-        webhookUrl: data.webhook_url || window.location.origin + '/api/webhook'
+        botToken: data.bot?.hasBotToken ? '••••••••••••••••••••' : '',
+        webhookUrl: data.bot?.webhookUrl || window.location.origin + '/api/webhook'
       }));
     } catch (error) {
       console.error('Error fetching status:', error);
