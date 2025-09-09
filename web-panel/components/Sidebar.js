@@ -13,40 +13,41 @@ export default function Sidebar({ currentPage = 'dashboard' }) {
   ];
 
   return (
-    <div className="w-64 bg-white border-r border-gray-200 min-h-screen">
-      <div className="p-6">
-        <div className="flex items-center gap-3 mb-8">
-          <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-white font-bold">
-            C
-          </div>
+    <aside className="sidebar">
+      <div className="sidebar-content">
+        <div className="sidebar-logo">
+          <div className="logo-icon">C</div>
           <div>
-            <div className="font-bold text-gray-900">CubaModel Bot</div>
-            <div className="text-sm text-gray-500">Admin Dashboard</div>
+            <div className="logo-title">CubaModel Bot</div>
+            <div className="logo-subtitle">Admin Dashboard</div>
           </div>
         </div>
-
-        <nav className="space-y-2">
+ 
+        <nav className="sidebar-nav">
           {menuItems.map((item) => (
             <a
               key={item.id}
               href={item.href}
-              className={`flex items-center gap-3 px-3 py-2 rounded-lg ${
-                currentPage === item.id ? 'bg-blue-600 text-white' : 'text-gray-600 hover:bg-gray-100'
-              }`}
+              className={`nav-item ${currentPage === item.id ? 'nav-active' : ''}`}
             >
-              <span>{item.icon}</span>
-              <span>{item.label}</span>
+              <span className="nav-icon">{item.icon}</span>
+              <span className="nav-label">{item.label}</span>
+              <span className="nav-arrow">→</span>
             </a>
           ))}
         </nav>
-
-        <div className="mt-auto pt-8">
-          <div className="text-sm text-gray-500 flex items-center justify-between">
-            <span>Bot Online</span>
-            <span className="text-blue-600">v2.1.0</span>
+ 
+        <div className="sidebar-status">
+          <div className="status-row">
+            <span>Status</span>
+            <div className="status-indicator">
+              <div className="status-dot"></div>
+              <span>Online</span>
+            </div>
           </div>
+          <div className="version">v2.1.0</div>
         </div>
       </div>
-    </div>
+    </aside>
   );
 }
