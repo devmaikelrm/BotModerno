@@ -26,9 +26,9 @@ export CLOUDFLARE_API_TOKEN="tu_token_aqui"
 npx wrangler deploy
 
 # Configura los secretos uno por uno
-echo "8212689812:AAGFe0uktu_mG0A3rDkyP-PAcdtOa9ipHjU" | npx wrangler secret put BOT_TOKEN
-echo "https://dlnqkmcacfwhbwdjxczw.supabase.co" | npx wrangler secret put SUPABASE_URL
-echo "tu_supabase_service_key" | npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
+echo "<TU_BOT_TOKEN>" | npx wrangler secret put BOT_TOKEN
+echo "<TU_SUPABASE_URL>" | npx wrangler secret put SUPABASE_URL
+echo "<TU_SUPABASE_SERVICE_ROLE_KEY>" | npx wrangler secret put SUPABASE_SERVICE_ROLE_KEY
 echo "tu_admin_ids" | npx wrangler secret put ADMIN_TG_IDS
 echo "tu_allowed_chat_ids" | npx wrangler secret put ALLOWED_CHAT_IDS
 ```
@@ -67,9 +67,9 @@ Para deployment automático, configura estos secretos en tu repo GitHub:
 ```
 CLOUDFLARE_API_TOKEN=tu_token
 CLOUDFLARE_ACCOUNT_ID=tu_account_id
-BOT_TOKEN=8212689812:AAGFe0uktu_mG0A3rDkyP-PAcdtOa9ipHjU
-SUPABASE_URL=https://dlnqkmcacfwhbwdjxczw.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=tu_service_key
+BOT_TOKEN=<TU_BOT_TOKEN>
+SUPABASE_URL=<TU_SUPABASE_URL>
+SUPABASE_SERVICE_ROLE_KEY=<TU_SUPABASE_SERVICE_ROLE_KEY>
 ADMIN_TG_IDS=tu_admin_ids
 ALLOWED_CHAT_IDS=tu_allowed_chat_ids
 ```
