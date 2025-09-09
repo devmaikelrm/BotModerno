@@ -4,6 +4,7 @@ export default function Sidebar({ currentPage = 'dashboard' }) {
   const menuItems = [
     { icon: '⚡', label: 'Dashboard', href: '/', id: 'dashboard' },
     { icon: '🤖', label: 'Bot Config', href: '/bot-config', id: 'bot-config' },
+    { icon: '⚙️', label: 'Bot Admin', href: '/bot-admin', id: 'bot-admin' },
     { icon: '📱', label: 'Phones', href: '/admin/phones', id: 'database' },
     { icon: '🔗', label: 'Webhook', href: '/webhook-status', id: 'webhook' },
     { icon: '🛡️', label: 'Moderation', href: '/moderation', id: 'moderation' },
