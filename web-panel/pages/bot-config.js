@@ -1,310 +1,306 @@
-import { useEffect, useState } from 'react';
-import Sidebar from '../components/Sidebar';
+import { useState, useEffect } from 'react';
+import { createClient } from '@supabase/supabase-js';
 
-// Use shared Sidebar component for consistent layout
+const supabaseUrl = 'https://dlnqkmcacfwhbwdjxczw.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRsbnFrbWNhY2Z3aGJ3ZGp4Y3p3Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1NjI1NTAxNiwiZXhwIjoyMDcxODMxMDE2fQ.gVRO0hc49Iaqh7Wh5toR4kifVkGIiaRd2BbHhP_vl28';
+
+const supabase = createClient(supabaseUrl, supabaseKey);
 
 export default function BotConfig() {
   const [config, setConfig] = useState({
-    botToken: '',
-    webhookUrl: '',
-    adminIds: '',
-    allowedChats: ''
+    welcome: '',
+    rules: '',
+    shortWelcome: true,
+    captchaEnabled: true,
+    captchaTimeout: 120,
+    autoApproveJoin: true
   });
-  const [status, setStatus] = useState({ webhook: false, bot: false });
-  const [loading, setLoading] = useState(false);
-  const [autoSetupResults, setAutoSetupResults] = useState(null);
-  const [isAutoSetupRunning, setIsAutoSetupRunning] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [message, setMessage] = useState('');
 
   useEffect(() => {
-    fetchStatus();
+    loadConfig();
   }, []);
 
-  const fetchStatus = async () => {
+  const loadConfig = async () => {
     try {
-      const res = await fetch('/api/status');
-      const data = await res.json();
-      
-      // Actualizar el estado basado en la respuesta de la API
-      setStatus({
-        bot: data.bot?.hasBotToken || false,
-        webhook: data.bot?.webhookSet || false
-      });
-      
-      setConfig(prev => ({
-        ...prev,
-        botToken: data.bot?.hasBotToken ? '••••••••••••••••••••' : '',
-        webhookUrl: data.bot?.webhookUrl || window.location.origin + '/api/webhook'
-      }));
-    } catch (error) {
-      console.error('Error fetching status:', error);
-    }
-  };
+      const { data, error } = await supabase
+        .from('bot_config')
+        .select('*')
+        .single();
 
-  const setupWebhook = async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/run-setup');
-      const data = await res.json();
-      if (data.ok) {
-        showToast('Webhook configurado exitosamente!', { type: 'success' });
-        fetchStatus();
-      } else {
-        showToast('Error: ' + data.message, { type: 'error' });
+      if (error) {
+        console.error('Error loading config:', error);
+        setMessage('Error cargando configuración');
+        return;
       }
-    } catch (error) {
-      showToast('Error al configurar webhook: ' + error.message, { type: 'error' });
-    }
-    setLoading(false);
-  };
 
-  const runAutoSetup = async () => {
-    setIsAutoSetupRunning(true);
-    setAutoSetupResults(null);
-    
-    try {
-      const res = await fetch('/api/auto-setup');
-      const data = await res.json();
-      setAutoSetupResults(data);
-      
-      if (data.success) {
-        alert('🎉 ¡Configuración automática completada exitosamente!');
-        fetchStatus();
-      } else {
-        alert('⚠️ Configuración completada con algunos problemas. Revisa los detalles.');
-      }
-    } catch (error) {
-      setAutoSetupResults({
-        success: false,
-        error: 'Auto-setup failed',
-        details: error.message
+      setConfig({
+        welcome: data.welcome || '',
+        rules: data.rules || '',
+        shortWelcome: data.short_welcome !== false,
+        captchaEnabled: data.captcha_enabled !== false,
+        captchaTimeout: data.captcha_timeout || 120,
+        autoApproveJoin: data.auto_approve_join !== false
       });
-      alert('Error en configuración automática: ' + error.message);
+    } catch (error) {
+      console.error('Error:', error);
+      setMessage('Error cargando configuración');
+    } finally {
+      setLoading(false);
     }
-    
-    setIsAutoSetupRunning(false);
   };
 
-  const deployToVercel = async () => {
+  const saveConfig = async () => {
+    setSaving(true);
+    setMessage('');
+
     try {
-      const res = await fetch('/api/smart-deploy', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          repoUrl: 'https://github.com/your-username/cubamodel-bot'
+      const { error } = await supabase
+        .from('bot_config')
+        .update({
+          welcome: config.welcome,
+          rules: config.rules,
+          short_welcome: config.shortWelcome,
+          captcha_enabled: config.captchaEnabled,
+          captcha_timeout: config.captchaTimeout,
+          auto_approve_join: config.autoApproveJoin,
+          updated_at: new Date().toISOString()
         })
-      });
-      const data = await res.json();
-      
-      if (data.success) {
-        window.open(data.deployUrl, '_blank');
-      } else {
-        alert('Error al preparar deployment: ' + data.error);
+        .eq('id', 1);
+
+      if (error) {
+        console.error('Error saving config:', error);
+        setMessage('Error guardando configuración');
+        return;
       }
+
+      setMessage('✅ Configuración guardada exitosamente');
     } catch (error) {
-      alert('Error: ' + error.message);
+      console.error('Error:', error);
+      setMessage('Error guardando configuración');
+    } finally {
+      setSaving(false);
     }
   };
+
+  const resetToDefault = () => {
+    setConfig({
+      welcome: `🎉 ¡BIENVENIDO A CUBAMODEL! 🇨🇺📱
+
+╔══════════════════════════════════════╗
+║        📱 BASE DE DATOS ABIERTA      ║
+║         PARA TELÉFONOS EN CUBA       ║
+╚══════════════════════════════════════╝
+
+🌟 Este proyecto nació porque antes intentaron 
+   cobrar por una base que la comunidad creó gratis.
+   
+✨ Aquí todo es distinto: la información será 
+   SIEMPRE abierta y descargable.
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+⚠️  LIMITACIONES ACTUALES:
+┌─────────────────────────────────────┐
+│ • Puede ir lento en horas pico      │
+│ • Hay topes de consultas            │
+│ • Puede fallar (fase desarrollo)    │
+└─────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+📜 NUESTRAS REGLAS:
+┌─────────────────────────────────────┐
+│ 1️⃣ Respeto; nada de insultos       │
+│ 2️⃣ No ventas, solo compatibilidad  │
+│ 3️⃣ Aporta datos reales con /subir  │
+│ 4️⃣ Usa /reportar para errores      │
+│ 5️⃣ La base es de todos             │
+└─────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+🚀 COMANDOS DISPONIBLES:
+┌─────────────────────────────────────┐
+│ /subir    → Agregar teléfono        │
+│ /buscar   → Buscar por modelo       │
+│ /reportar → Reportar problema       │
+│ /reglas   → Ver reglas completas    │
+│ /ayuda    → Ver ayuda               │
+└─────────────────────────────────────┘
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+💫 Gracias por sumarte. 
+   Esto es de todos y para todos. ✨
+
+🇨🇺 ¡Vamos a hacer la mejor base de datos 
+    de compatibilidad de teléfonos en Cuba! 🇨🇺`,
+      rules: `1) Respeto; nada de insultos ni spam.
+2) No ventas, solo compatibilidad de teléfonos en Cuba.
+3) Aporta datos reales con /subir.
+4) Usa /reportar para avisar de errores.
+5) La base es de todos, nadie puede privatizarla.`,
+      shortWelcome: true,
+      captchaEnabled: true,
+      captchaTimeout: 120,
+      autoApproveJoin: true
+    });
+  };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-500 mx-auto"></div>
+          <p className="mt-4 text-gray-600">Cargando configuración...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="app-container">
-      <Sidebar currentPage="bot-config" />
+    <div className="min-h-screen bg-gray-100 py-8">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="bg-white rounded-lg shadow-lg p-6">
+          <h1 className="text-3xl font-bold text-gray-800 mb-6">
+            🤖 Configuración del Bot
+          </h1>
 
-      <main className="main-content">
-        <div className="page-header">
-          <div className="header-content">
+          {message && (
+            <div className={`mb-6 p-4 rounded-lg ${
+              message.includes('✅') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+            }`}>
+              {message}
+            </div>
+          )}
+
+          <div className="space-y-6">
+            {/* Mensaje de Bienvenida */}
             <div>
-              <h1 className="page-title">Bot Configuration</h1>
-              <p className="page-subtitle">Manage your Telegram bot settings</p>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📝 Mensaje de Bienvenida
+              </label>
+              <textarea
+                value={config.welcome}
+                onChange={(e) => setConfig({...config, welcome: e.target.value})}
+                rows={15}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Escribe el mensaje de bienvenida aquí..."
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Este mensaje se enviará cuando los usuarios usen /start
+              </p>
             </div>
-            <div className="header-actions">
-              <button 
-                className="btn green" 
-                onClick={setupWebhook}
-                disabled={loading}
-              >
-                {loading ? 'Configurando...' : 'Setup Webhook'}
-              </button>
-              <button className="btn gray" onClick={fetchStatus}>Refresh</button>
-            </div>
-          </div>
-        </div>
 
-        <div className="page-content">
-          <div className="container">
-            <h1>Bot Configuration</h1>
-            <div className="subtitle">Configure your Telegram bot settings and webhook</div>
-            
-            <div style={{display:'grid', gap:'24px', gridTemplateColumns:'1fr 1fr'}}>
-              <div className="card">
-                <h3>🤖 Bot Status</h3>
-                <div className="row">
-                  <span>Bot Token:</span>
-                  <div className={status.bot ? 'badge ok' : 'badge err'}>
-                    {status.bot ? 'Configured' : 'Missing'}
-                  </div>
-                </div>
-                <div className="row">
-                  <span>Webhook:</span>
-                  <div className={status.webhook ? 'badge ok' : 'badge err'}>
-                    {status.webhook ? 'Active' : 'Inactive'}
-                  </div>
-                </div>
-              </div>
+            {/* Reglas */}
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                📜 Reglas del Bot
+              </label>
+              <textarea
+                value={config.rules}
+                onChange={(e) => setConfig({...config, rules: e.target.value})}
+                rows={8}
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                placeholder="Escribe las reglas aquí..."
+              />
+              <p className="text-sm text-gray-500 mt-1">
+                Estas reglas se mostrarán cuando los usuarios usen /reglas
+              </p>
+            </div>
+
+            {/* Configuraciones de Moderación */}
+            <div className="border-t pt-6">
+              <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                🛡️ Configuración de Moderación
+              </h2>
               
-              <div className="card">
-                <h3>🔗 Webhook Configuration</h3>
-                <div style={{marginBottom:'16px'}}>
-                  <label style={{fontSize:'14px', fontWeight:'600', color:'var(--text)'}}>
-                    Webhook URL:
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="shortWelcome"
+                    checked={config.shortWelcome}
+                    onChange={(e) => setConfig({...config, shortWelcome: e.target.checked})}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="shortWelcome" className="ml-2 text-sm text-gray-700">
+                    Mostrar bienvenida corta en grupos
                   </label>
-                  <input 
-                    type="text"
-                    value={config.webhookUrl}
-                    readOnly
-                    style={{
-                      width:'100%',
-                      padding:'8px 12px',
-                      border:'1px solid var(--border)',
-                      borderRadius:'8px',
-                      marginTop:'4px',
-                      background:'#f9fafb',
-                      fontSize:'13px'
-                    }}
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="captchaEnabled"
+                    checked={config.captchaEnabled}
+                    onChange={(e) => setConfig({...config, captchaEnabled: e.target.checked})}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="captchaEnabled" className="ml-2 text-sm text-gray-700">
+                    Habilitar verificación captcha
+                  </label>
+                </div>
+
+                <div className="flex items-center">
+                  <input
+                    type="checkbox"
+                    id="autoApproveJoin"
+                    checked={config.autoApproveJoin}
+                    onChange={(e) => setConfig({...config, autoApproveJoin: e.target.checked})}
+                    className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
+                  />
+                  <label htmlFor="autoApproveJoin" className="ml-2 text-sm text-gray-700">
+                    Aprobar automáticamente solicitudes de unión
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">
+                    ⏰ Tiempo límite del captcha (segundos)
+                  </label>
+                  <input
+                    type="number"
+                    value={config.captchaTimeout}
+                    onChange={(e) => setConfig({...config, captchaTimeout: parseInt(e.target.value)})}
+                    min="60"
+                    max="300"
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
                   />
                 </div>
-                <button 
-                  className="btn blue"
-                  onClick={setupWebhook}
-                  disabled={loading}
-                  style={{width:'100%'}}
-                >
-                  {loading ? 'Setting up...' : 'Configure Webhook'}
-                </button>
               </div>
             </div>
-            
-            <div className="section card">
-              <h3>⚡ Configuración Automática</h3>
-              <div className="subtitle">Configura todo automáticamente con un solo click</div>
-              
-              <div style={{display:'grid', gap:'16px', gridTemplateColumns:'1fr 1fr'}}>
-                <div>
-                  <h4 style={{margin:'0 0 12px', fontSize:'15px', fontWeight:'600'}}>🤖 Setup Automático</h4>
-                  <div style={{marginBottom:'16px'}}>
-                    <p style={{margin:'0 0 8px', fontSize:'14px'}}>
-                      Configura automáticamente:
-                    </p>
-                    <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
-                      <li>Verifica variables de entorno</li>
-                      <li>Conecta y prueba la base de datos</li>
-                      <li>Valida el token del bot</li>
-                      <li>Configura webhook automáticamente</li>
-                      <li>Prepara dashboard de admin</li>
-                    </ul>
-                  </div>
-                  <button 
-                    className="btn green"
-                    onClick={runAutoSetup}
-                    disabled={isAutoSetupRunning}
-                    style={{width:'100%'}}
-                  >
-                    {isAutoSetupRunning ? '⏳ Configurando...' : '⚡ Auto-Setup Completo'}
-                  </button>
-                </div>
-                
-                <div>
-                  <h4 style={{margin:'0 0 12px', fontSize:'15px', fontWeight:'600'}}>🚀 Deploy Inteligente</h4>
-                  <div style={{marginBottom:'16px'}}>
-                    <p style={{margin:'0 0 8px', fontSize:'14px'}}>
-                      Deploy optimizado que incluye:
-                    </p>
-                    <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
-                      <li>Variables pre-configuradas</li>
-                      <li>Deploy automático a Vercel</li>
-                      <li>Configuración post-deploy</li>
-                      <li>Webhook automático</li>
-                      <li>Monitoreo incluido</li>
-                    </ul>
-                  </div>
-                  <button 
-                    className="btn blue"
-                    onClick={deployToVercel}
-                    style={{width:'100%'}}
-                  >
-                    🚀 Smart Deploy to Vercel
-                  </button>
-                </div>
-              </div>
+
+            {/* Botones de Acción */}
+            <div className="border-t pt-6 flex flex-wrap gap-4">
+              <button
+                onClick={saveConfig}
+                disabled={saving}
+                className="bg-blue-500 hover:bg-blue-600 disabled:bg-blue-300 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                {saving ? 'Guardando...' : '💾 Guardar Configuración'}
+              </button>
+
+              <button
+                onClick={resetToDefault}
+                className="bg-gray-500 hover:bg-gray-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                🔄 Restaurar por Defecto
+              </button>
+
+              <button
+                onClick={loadConfig}
+                className="bg-green-500 hover:bg-green-600 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+              >
+                🔄 Recargar
+              </button>
             </div>
-            
-            {autoSetupResults && (
-              <div className="section card">
-                <h3>📋 Resultados de Configuración</h3>
-                <div className="subtitle">Estado del setup automático</div>
-                
-                <div style={{marginTop:'16px'}}>
-                  {autoSetupResults.summary && (
-                    <div style={{
-                      padding:'16px', 
-                      background: autoSetupResults.summary.success ? '#dcfce7' : '#fef3c7',
-                      borderRadius:'12px',
-                      marginBottom:'16px'
-                    }}>
-                      <div style={{display:'flex', alignItems:'center', gap:'12px'}}>
-                        <span style={{fontSize:'24px'}}>
-                          {autoSetupResults.summary.success ? '🎉' : '⚠️'}
-                        </span>
-                        <div>
-                          <div style={{fontWeight:'600', fontSize:'16px'}}>
-                            {autoSetupResults.summary.success ? '¡Configuración Completada!' : 'Configuración con Problemas'}
-                          </div>
-                          <div style={{fontSize:'14px', color:'var(--muted)'}}>
-                            {autoSetupResults.summary.completedSteps}/{autoSetupResults.summary.totalSteps} pasos completados 
-                            ({autoSetupResults.summary.percentage}%)
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                  
-                  <div style={{display:'grid', gap:'8px'}}>
-                    {autoSetupResults.steps?.map((step, index) => (
-                      <div key={index} style={{
-                        display:'flex',
-                        alignItems:'center',
-                        gap:'12px',
-                        padding:'12px',
-                        background:'#f9fafb',
-                        borderRadius:'8px',
-                        border:'1px solid var(--border)'
-                      }}>
-                        <span style={{fontSize:'18px'}}>
-                          {step.status === 'success' ? '✅' : step.status === 'error' ? '❌' : step.status === 'warning' ? '⚠️' : '⏳'}
-                        </span>
-                        <div style={{flex:1}}>
-                          <div style={{fontWeight:'600', fontSize:'14px'}}>{step.name}</div>
-                          <div style={{fontSize:'13px', color:'var(--muted)'}}>{step.message}</div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  {autoSetupResults.summary?.nextSteps && (
-                    <div style={{marginTop:'16px'}}>
-                      <h4 style={{margin:'0 0 8px', fontSize:'14px', fontWeight:'600'}}>Próximos Pasos:</h4>
-                      <ul style={{margin:'0', paddingLeft:'20px', fontSize:'13px', color:'var(--muted)'}}>
-                        {autoSetupResults.summary.nextSteps.map((step, index) => (
-                          <li key={index}>{step}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }

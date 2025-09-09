@@ -1,22 +1,28 @@
 {
-  "name": "botmoderno-web-panel",
+  "name": "cubamodel-web-panel",
+  "version": "2.2.0",
   "private": true,
   "scripts": {
     "dev": "next dev -p 5000 -H 0.0.0.0",
     "build": "next build", 
-    "export": "next export",
-    "build:cloudflare": "next build && next export",
-    "build:cf": "npx @cloudflare/next-on-pages@latest",
     "start": "next start",
-    "dev:vercel": "next dev"
+    "lint": "next lint",
+    "type-check": "tsc --noEmit"
   },
   "dependencies": {
-    "@supabase/supabase-js": "^2.45.6",
+    "@supabase/supabase-js": "^2.57.2",
     "autoprefixer": "^10.4.21",
     "next": "14.2.5",
     "postcss": "^8.5.6",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "telegraf": "4.16.3"
+    "react-dom": "18.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "@types/react": "^18.3.0",
+    "@types/react-dom": "^18.3.0",
+    "eslint": "^8.57.0",
+    "eslint-config-next": "14.2.5",
+    "typescript": "^5.4.0"
   }
 }

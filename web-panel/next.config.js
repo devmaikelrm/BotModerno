@@ -1,58 +1,25 @@
-module.exports = { 
-  reactStrictMode: true,
-  devIndicators: {
-    buildActivity: false
-  },
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  output: 'standalone',
   experimental: {
-    serverComponentsExternalPackages: ['telegraf']
+    serverComponentsExternalPackages: ['@supabase/supabase-js']
   },
-  
-  // Configuración para Cloudflare Pages - deshabilitar export por ahora
-  // output: process.env.NODE_ENV === 'production' ? 'export' : undefined,
-  trailingSlash: false,
-  images: {
-    unoptimized: true
+  env: {
+    CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
-  
-  // Allow all hosts for development
-  async rewrites() {
-    return []
-  },
-  
   async headers() {
     return [
       {
-        source: '/(.*)',
+        source: '/api/:path*',
         headers: [
-          {
-            key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate'
-          }
+          { key: 'Access-Control-Allow-Credentials', value: 'true' },
+          { key: 'Access-Control-Allow-Origin', value: '*' },
+          { key: 'Access-Control-Allow-Methods', value: 'GET,OPTIONS,PATCH,DELETE,POST,PUT' },
+          { key: 'Access-Control-Allow-Headers', value: 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version' },
         ]
       }
     ]
-  },
-  
-  async redirects() {
-    return [
-      {
-        source: '/dashboard',
-        destination: '/',
-        permanent: true
-      }
-    ]
-  },
-  
-  // Override the host check for development
-  ...(process.env.NODE_ENV === 'development' && {
-    webpack: (config, { dev }) => {
-      if (dev) {
-        config.watchOptions = {
-          ...config.watchOptions,
-          ignored: ['**/node_modules/**', '**/.next/**']
-        }
-      }
-      return config
-    }
-  })
-};
+  }
+}
+
+module.exports = nextConfig
