@@ -2,8 +2,8 @@
 import { NextResponse } from 'next/server';
 export const config = { matcher: ['/admin/:path*','/api/admin/:path*'] };
 export function middleware(req){
-  const user = process.env.DASHBOARD_USER || 'admin';
-  const pass = process.env.DASHBOARD_PASS || 'admin';
+  const user = process.env.PANEL_USER || process.env.DASHBOARD_USER || 'admin';
+  const pass = process.env.PANEL_PASS || process.env.DASHBOARD_PASS || 'admin';
   const auth = req.headers.get('authorization') || '';
   const [scheme, encoded] = auth.split(' ');
   if (scheme === 'Basic' && encoded){
