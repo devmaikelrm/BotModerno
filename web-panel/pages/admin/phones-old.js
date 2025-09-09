@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from 'react';
 
 // Helpers para parsear arrays
