@@ -54,15 +54,17 @@ function ModernInput({ label, placeholder, value, onChange, type = 'text', optio
 export default function PhonesAdmin() {
   const [rows, setRows] = useState([]);
   const [q, setQ] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // 'all', 'approved', 'pending'
   const [form, setForm] = useState({ commercial_name:'', model:'', works:true, bands:'', provinces:'', observations:'' });
   const [editing, setEditing] = useState(null);
   const [loading, setLoading] = useState(false);
   const [stats, setStats] = useState({ total: 0, working: 0, notWorking: 0 });
   
-  const load = async () => {
+  const load = async (loadAll = false) => {
     setLoading(true);
     try {
-      const res = await fetch(`/api/admin/phones?q=${encodeURIComponent(q)}`);
+      const limit = loadAll ? '10000' : '1000'; // Load up to 10k for "all", 1k for normal
+      const res = await fetch(`/api/admin/phones?q=${encodeURIComponent(q)}&to=${limit}&status=${statusFilter}`);
       const data = await res.json();
       // Convertir arrays a texto para los inputs
       const processedRows = (data.data || []).map(row => ({
@@ -71,7 +73,7 @@ export default function PhonesAdmin() {
         provinces: Array.isArray(row.provinces) ? arrayToText(row.provinces) : (row.provinces || '')
       }));
       setRows(processedRows);
-      
+
       // Calcular estadísticas
       const total = processedRows.length;
       const working = processedRows.filter(r => r.works).length;
@@ -83,7 +85,7 @@ export default function PhonesAdmin() {
     }
   };
   
-  useEffect(() => { load(); }, [q]);
+  useEffect(() => { load(); }, [q, statusFilter]);
   
   const save = async () => {
     setLoading(true);
@@ -214,9 +216,25 @@ export default function PhonesAdmin() {
                   onChange={(e) => setQ(e.target.value)}
                 />
               </div>
+              <div style={{marginLeft: '16px'}}>
+                <ModernInput
+                  label=""
+                  type="select"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  options={[
+                    { value: 'all', label: 'All Status' },
+                    { value: 'approved', label: '✅ Approved' },
+                    { value: 'pending', label: '⏳ Pending' }
+                  ]}
+                />
+              </div>
               <div className="action-buttons">
-                <button onClick={load} disabled={loading} className="action-btn btn-primary" >
+                <button onClick={() => load(false)} disabled={loading} className="action-btn btn-secondary" >
                   {loading ? '🔄' : '🔍'} Search
+                </button>
+                <button onClick={() => load(true)} disabled={loading} className="action-btn btn-primary" >
+                  {loading ? '🔄' : '📱'} Load All
                 </button>
               </div>
             </div>

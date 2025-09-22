@@ -4,9 +4,10 @@
   "private": true,
   "scripts": {
     "dev": "next dev -p 5000 -H 0.0.0.0",
-    "build": "next build", 
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "lint:fix": "next lint --fix",
     "type-check": "tsc --noEmit"
   },
   "dependencies": {
@@ -15,8 +16,7 @@
     "next": "14.2.5",
     "postcss": "^8.5.6",
     "react": "18.3.1",
-    "react-dom": "18.3.1",
-    "telegraf": "^4.16.3"
+    "react-dom": "18.3.1"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",

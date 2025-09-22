@@ -3,9 +3,21 @@ import { getAdminClient } from '../../../lib/supabase';
 export default async function handler(req, res){
   const db = getAdminClient();
   if (req.method === 'GET'){
-    const { from='0', to='50', q='' } = req.query;
+    const { from='0', to='1000', q='', status='all' } = req.query; // Increased default limit to 1000
     let query = db.from('phones').select('*').order('created_at', { ascending:false }).range(parseInt(from), parseInt(to));
-    if (q) query = db.from('phones').select('*').ilike('commercial_name', `%${q}%`).order('created_at', { ascending:false }).range(parseInt(from), parseInt(to));
+
+    // Apply status filter if specified
+    if (status !== 'all') {
+      query = query.eq('status', status);
+    }
+
+    if (q) {
+      query = db.from('phones').select('*').ilike('commercial_name', `%${q}%`).order('created_at', { ascending:false }).range(parseInt(from), parseInt(to));
+      if (status !== 'all') {
+        query = query.eq('status', status);
+      }
+    }
+
     const { data, error } = await query; if (error) return res.status(400).json({ error: error.message });
     return res.status(200).json({ data });
   }
